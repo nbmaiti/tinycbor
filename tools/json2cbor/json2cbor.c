@@ -417,8 +417,9 @@ int main(int argc, char **argv)
         }
     }
 
-    FILE *in;
+    FILE *in, *outfp = NULL;
     const char *fname = argv[optind];
+    const char *outfname = "outfile.cbor";
     if (fname && strcmp(fname, "-") != 0) {
         in = fopen(fname, "r");
         if (!in) {
@@ -486,8 +487,16 @@ int main(int argc, char **argv)
                 cbor_error_string(err));
         return EXIT_FAILURE;
     }
-
+    if (outfname && strcmp(outfname, "-") != 0) {
+        outfp = fopen(outfname, "w");
+        if (!outfp) {
+            perror("open");
+            return EXIT_FAILURE;
+        }
+    }
+    fwrite(buffer, 1, encoder.data.ptr - buffer, outfp);
     fwrite(buffer, 1, encoder.data.ptr - buffer, stdout);
+    fclose(outfp);
     free(buffer);
     return EXIT_SUCCESS;
 }
